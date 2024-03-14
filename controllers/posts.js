@@ -1,32 +1,32 @@
 const Post = require('../models/post');
-const resHandle = require('../services/resHandle');
+const successHandle = require('../services/successHandle');
+const errorHandle = require('../services/errorHandle');
 
 const posts = {
     async getPosts ({ req, res }) {
-        const posts = await Post.find();
-        resHandle(res, 200, posts);
+        successHandle(res, await Post.find());
     },
     async createPosts ({ req, res, body }) {
         try {
             const { name, image, content, type, tags } = JSON.parse(body);
             const addPost = await Post.create({ name, image, content, type, tags });
-            resHandle(res, 200, addPost);
+            successHandle(res, addPost);
         } catch ({ errors }) {
-            resHandle(res, 400, errors);
+            errorHandle(res, 400, 'format', errors);
         }
     },
     async deletePosts ({ req, res }) {
         await Post.deleteMany({});
         const posts = await Post.find();
-        resHandle(res, 200, posts);
+        successHandle(res, posts);
     },
     async deletePost ({ req, res, url }) {
         const id = url.split('/').pop();
         const delPost = await Post.findByIdAndDelete(id);
         if (delPost) {
-            resHandle(res, 200, delPost);
+            successHandle(res, delPost)
         } else {
-            resHandle(res, 400);
+            errorHandle(res, 400, 'id');
         }
         
     },
@@ -35,16 +35,17 @@ const posts = {
             const { name, image, content, type, tags } = JSON.parse(body);
             const updateData = { name, image, content, type, tags };
             const id = url.split('/').pop();
-            await Post.findByIdAndUpdate(id, updateData);
-            const updatePost = await Post.findById(id);
+            // new 參數指定是否返回更新後的文件
+            // runValidators 參數指定是否在更新時 進行 Schema 定義的驗證器
+            const updatePost = await Post.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 
             if (updatePost) {
-                resHandle(res, 200, updatePost);
+                successHandle(res, updatePost);
             } else {
-                resHandle(res, 400);
+                errorHandle(res, 400, 'id');
             }
         } catch ({ errors }) {
-            resHandle(res, 400, errors);
+            errorHandle(res, 400, 'errorKey', errors);
         }
     }
 

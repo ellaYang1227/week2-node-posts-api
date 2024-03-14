@@ -1,5 +1,5 @@
 const headers = require('../services/headers');
-const resHandle = require('../services/resHandle');
+const errorHandle = require('../services/errorHandle');
 
 const http = {
     core ({ req, res }) {
@@ -7,7 +7,7 @@ const http = {
         res.end();
     },
     notFound ({ req, res }) {
-        resHandle(res, 404);
+        errorHandle(res, 404, 'routing');
     }
 };
 
