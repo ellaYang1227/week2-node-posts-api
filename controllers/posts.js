@@ -32,20 +32,26 @@ const posts = {
     },
     async editPost ({ req, res, url, body }) {
         try {
-            const { name, image, content, type, tags } = JSON.parse(body);
-            const updateData = { name, image, content, type, tags };
-            const id = url.split('/').pop();
-            // new 參數指定是否返回更新後的文件
-            // runValidators 參數指定是否在更新時 進行 Schema 定義的驗證器
-            const updatePost = await Post.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
-
-            if (updatePost) {
-                successHandle(res, updatePost);
+            body = JSON.parse(body);
+            
+            if (!Object.keys(body).length) {
+                throw new Error();
             } else {
-                errorHandle(res, 400, 'id');
+                const { name, image, content, type, tags } = body;
+                const updateData = { name, image, content, type, tags };
+                const id = url.split('/').pop();
+                // new 參數指定是否返回更新後的文件
+                // runValidators 參數指定是否在更新時 進行 Schema 定義的驗證器
+                const updatePost = await Post.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+
+                if (updatePost) {
+                    successHandle(res, updatePost);
+                } else {
+                    errorHandle(res, 400, 'id');
+                }
             }
         } catch ({ errors }) {
-            errorHandle(res, 400, 'errorKey', errors);
+            errorHandle(res, 400, 'format', errors);
         }
     }
 
