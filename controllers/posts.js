@@ -4,7 +4,8 @@ const errorHandle = require('../services/errorHandle');
 
 const posts = {
     async getPosts ({ req, res }) {
-        successHandle(res, await Post.find());
+        // 貼文時間：新到舊
+        successHandle(res, await Post.find().sort({ createdAt: -1 }));
     },
     async createPosts ({ req, res, body }) {
         try {
