@@ -10,7 +10,7 @@ const posts = {
     async createPosts ({ req, res, body }) {
         try {
             const { name, image, content, type, tags } = JSON.parse(body);
-            const addPost = await Post.create({ name, image, content, type, tags });
+            const addPost = await Post.create({ name, image, content: content.trim(), type, tags });
             successHandle(res, addPost);
         } catch ({ errors }) {
             errorHandle(res, 400, 'format', errors);
@@ -22,14 +22,17 @@ const posts = {
         successHandle(res, posts);
     },
     async deletePost ({ req, res, url }) {
-        const id = url.split('/').pop();
-        const delPost = await Post.findByIdAndDelete(id);
-        if (delPost) {
-            successHandle(res, delPost)
-        } else {
-            errorHandle(res, 400, 'id');
+        try {
+            const id = url.split('/').pop();
+            const delPost = await Post.findByIdAndDelete(id);
+            if (delPost) {
+                successHandle(res, delPost)
+            } else {
+                errorHandle(res, 400, 'id');
+            }
+        } catch ({ errors }) {
+            errorHandle(res, 400, 'id', errors);
         }
-        
     },
     async editPost ({ req, res, url, body }) {
         try {
@@ -38,8 +41,15 @@ const posts = {
             if (!Object.keys(body).length) {
                 throw new Error();
             } else {
+                // 檢查是否有多餘欄位
+                const fields = ['name', 'image', 'content', 'type', 'tags'];
+                const isExcessFields = Object.keys(body).some(key => !fields.includes(key));
+                if (isExcessFields) {
+                   return errorHandle(res, 400, 'format');
+                }
+
                 const { name, image, content, type, tags } = body;
-                const updateData = { name, image, content, type, tags };
+                const updateData = { name, image, content: content.trim(), type, tags };
                 const id = url.split('/').pop();
                 // new 參數指定是否返回更新後的文件
                 // runValidators 參數指定是否在更新時 進行 Schema 定義的驗證器
