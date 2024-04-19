@@ -43,9 +43,14 @@ const posts = {
             } else {
                 // 檢查是否有多餘欄位
                 const fields = ['name', 'image', 'content', 'type', 'tags'];
-                const isExcessFields = Object.keys(body).some(key => !fields.includes(key));
-                if (isExcessFields) {
-                   return errorHandle(res, 400, 'format');
+                const excessFields = Object.keys(body).reduce((accumulator, currentValue) => {
+                    if (!fields.includes(currentValue)) { accumulator.push(currentValue) }
+                    return accumulator;
+                }, []);
+
+                if (excessFields.length) {
+                    console.log(excessFields)
+                   return errorHandle(res, 400, 'format', `不應包含 ${ excessFields.join('、') } 欄位`);
                 }
 
                 const { name, image, content, type, tags } = body;
